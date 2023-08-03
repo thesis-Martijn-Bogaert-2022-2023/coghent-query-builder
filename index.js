@@ -1,5 +1,5 @@
 // Function to process the properties
-function buildQuery(properties) {
+function buildQuery(properties, prefixes) {
 	// Holds unique prefixes
 	const usedPrefixes = new Set();
 
@@ -63,7 +63,7 @@ function buildQuery(properties) {
 
 	// Add prefix statements to query
 	prefixStatements = [...usedPrefixes]
-		.map((prefix) => `PREFIX ${prefix}:URL`)
+		.map((prefix) => `PREFIX ${prefix}:${prefixes[prefix]}`)
 		.join('\n');
 	query += `${prefixStatements}\n\n`;
 
@@ -97,5 +97,10 @@ const properties = {
 	],
 };
 
-const query = buildQuery(properties);
+const prefixes = {
+	cidoc: '<http://www.cidoc-crm.org/cidoc-crm/>',
+	skos: '<http://www.w3.org/2004/02/skos/core#>',
+};
+
+const query = buildQuery(properties, prefixes);
 console.log(query);
