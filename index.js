@@ -103,14 +103,6 @@ function buildQuery(properties, prefixes) {
 	return query;
 }
 
-// Example usage
-// const properties = {
-// 	title: [{ prefix: 'cidoc', predicate: 'P102_has_title' }],
-// 	description: [
-// 		{ prefix: 'cidoc', predicate: 'P3_has_note', object_variable_name: 'note' },
-// 	],
-// };
-
 const properties = {
 	title: {
 		statements: [{ prefix: 'cidoc', predicate: 'P102_has_title' }],
@@ -131,10 +123,6 @@ const prefixes = {
 	cidoc: '<http://www.cidoc-crm.org/cidoc-crm/>',
 	skos: '<http://www.w3.org/2004/02/skos/core#>',
 };
-
-// const filters = {
-// 	description: { string: 'luchter', language: 'nl' },
-// };
 
 const query = buildQuery(properties, prefixes);
 console.log(query);
