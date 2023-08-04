@@ -10,53 +10,75 @@ function buildQuery(properties, prefixes) {
 	const whereStatements = [];
 
 	// Loop over each property
-	for (const [property, predicateDescriptions] of Object.entries(properties)) {
+	for (const [propertyName, propertyDetails] of Object.entries(properties)) {
+		const propertyStatements = propertyDetails['statements'];
+		const propertyFilters = propertyDetails['filters'];
+
+		// Statements are required to build query for current property
+		if (!propertyStatements) continue;
+
 		// "Human made object" (artwork) is starting subject
 		let nextSubject = 'human_made_object';
 
 		// Start statements for property in WHERE clause with property name as comment
-		let statements = `# ${property}`;
+		let statementsSparql = `# ${propertyName}`;
 
-		predicateDescriptions.forEach((predicateDescription, index) => {
-			const prefix = predicateDescription['prefix'];
-			const predicate = predicateDescription['predicate'];
-			let objectVariableName = predicateDescription['object_variable_name'];
+		// Build WHERE statements for current property
+		propertyStatements.forEach((statement, index) => {
+			const prefix = statement['prefix'];
+			const predicate = statement['predicate'];
+			let objectVariableName = statement['object_variable_name'];
 
 			// Add prefix to set of prefixes
 			usedPrefixes.add(prefix);
 
 			// Use property name as object variable name in case ending object varialbe name isn't available
-			if (!objectVariableName && index >= predicateDescriptions.length - 1) {
-				objectVariableName = property;
+			if (!objectVariableName && index >= propertyStatements.length - 1) {
+				objectVariableName = propertyName;
 			}
 
 			// Start new triple in case subject is ready, build property path sequence otherwise
 			if (nextSubject) {
-				statements += `\n?${nextSubject} `;
+				statementsSparql += `\n?${nextSubject} `;
 			} else {
-				statements += '/';
+				statementsSparql += '/';
 			}
 
 			// Add optional prefix and predicate
 			if (prefix) {
-				statements += `${prefix}:`;
+				statementsSparql += `${prefix}:`;
 			}
-			statements += predicate;
+			statementsSparql += predicate;
 
 			// Finish triple in case object variable name is available
 			if (objectVariableName) {
-				statements += ` ?${objectVariableName}.`;
+				statementsSparql += ` ?${objectVariableName}.`;
 				nextSubject = objectVariableName;
 			} else {
 				nextSubject = null;
 			}
 		});
 
+		// Build FILTER statements for current property
+		if (propertyFilters) {
+			// Filter on given string if available
+			const stringFilter = propertyFilters['string'];
+			if (stringFilter) {
+				statementsSparql += `\nFILTER(regex(?${nextSubject}, "${stringFilter}", "i"))`;
+			}
+
+			// Filter on given language if available
+			const languageFilter = propertyFilters['language'];
+			if (languageFilter) {
+				statementsSparql += `\nFILTER(LANG(?${nextSubject}) = "${languageFilter}")`;
+			}
+		}
+
 		// Add finishing object variable name to array for SELECT statement
 		selectVariables.push(nextSubject);
 
 		// Add statements for current property to array containing all statements for WHERE clause
-		whereStatements.push(statements);
+		whereStatements.push(statementsSparql);
 	}
 
 	let query = '';
@@ -82,30 +104,37 @@ function buildQuery(properties, prefixes) {
 }
 
 // Example usage
+// const properties = {
+// 	title: [{ prefix: 'cidoc', predicate: 'P102_has_title' }],
+// 	description: [
+// 		{ prefix: 'cidoc', predicate: 'P3_has_note', object_variable_name: 'note' },
+// 	],
+// };
+
 const properties = {
-	title: [
-		{ prefix: 'cidoc', predicate: 'P102_has_title' }
-	],
-	description: [
-		{ prefix: 'cidoc', predicate: 'P3_has_note', object_variable_name: 'note' },
-	],
-	objectname: [
-		{ prefix: 'cidoc', predicate: 'P41i_was_classified_by' },
-		{ prefix: 'cidoc', predicate: 'P42_assigned' },
-		{ prefix: 'skos', predicate: 'prefLabel' },
-	],
-	association: [
-		{ prefix: 'cidoc', predicate: 'P128_carries' },
-		{ prefix: 'cidoc', predicate: 'P129_is_about', object_variable_name: 'about' },
-		{ prefix: 'cidoc', predicate: 'P2_has_type' },
-		{ prefix: 'skos', predicate: 'prefLabel' },
-	],
+	title: {
+		statements: [{ prefix: 'cidoc', predicate: 'P102_has_title' }],
+	},
+	description: {
+		statements: [
+			{
+				prefix: 'cidoc',
+				predicate: 'P3_has_note',
+				object_variable_name: 'note',
+			},
+		],
+		filters: { string: 'luchter', language: 'nl' },
+	},
 };
 
 const prefixes = {
 	cidoc: '<http://www.cidoc-crm.org/cidoc-crm/>',
 	skos: '<http://www.w3.org/2004/02/skos/core#>',
 };
+
+// const filters = {
+// 	description: { string: 'luchter', language: 'nl' },
+// };
 
 const query = buildQuery(properties, prefixes);
 console.log(query);
