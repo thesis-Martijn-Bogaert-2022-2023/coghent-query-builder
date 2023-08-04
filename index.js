@@ -84,15 +84,20 @@ function buildQuery(properties, prefixes) {
 // Example usage
 const properties = {
 	title: [
-		{
-			prefix: 'cidoc',
-			predicate: 'P102_has_title',
-			object_variable_name: 'titleVar',
-		},
+		{ prefix: 'cidoc', predicate: 'P102_has_title' }
+	],
+	description: [
+		{ prefix: 'cidoc', predicate: 'P3_has_note', object_variable_name: 'note' },
 	],
 	objectname: [
 		{ prefix: 'cidoc', predicate: 'P41i_was_classified_by' },
 		{ prefix: 'cidoc', predicate: 'P42_assigned' },
+		{ prefix: 'skos', predicate: 'prefLabel' },
+	],
+	association: [
+		{ prefix: 'cidoc', predicate: 'P128_carries' },
+		{ prefix: 'cidoc', predicate: 'P129_is_about', object_variable_name: 'about' },
+		{ prefix: 'cidoc', predicate: 'P2_has_type' },
 		{ prefix: 'skos', predicate: 'prefLabel' },
 	],
 };
