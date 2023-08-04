@@ -13,6 +13,7 @@ function buildQuery(properties, prefixes) {
 	for (const [propertyName, propertyDetails] of Object.entries(properties)) {
 		const propertyStatements = propertyDetails['statements'];
 		const propertyFilters = propertyDetails['filters'];
+		const propertyIsOptional = propertyDetails['optional'];
 
 		// Statements are required to build query for current property
 		if (!propertyStatements) continue;
@@ -20,8 +21,8 @@ function buildQuery(properties, prefixes) {
 		// "Human made object" (artwork) is starting subject
 		let nextSubject = 'human_made_object';
 
-		// Start statements for property in WHERE clause with property name as comment
-		let statementsSparql = `# ${propertyName}`;
+		// String for building current propertie's WHERE clause statements
+		let statementsSparql = '';
 
 		// Build WHERE statements for current property
 		propertyStatements.forEach((statement, index) => {
@@ -64,7 +65,7 @@ function buildQuery(properties, prefixes) {
 			// Filter on given string if available
 			const stringFilter = propertyFilters['string'];
 			if (stringFilter) {
-				statementsSparql += `\nFILTER(regex(?${nextSubject}, "${stringFilter}", "i"))`;
+				statementsSparql += `\nFILTER(REGEX(?${nextSubject}, "${stringFilter}", "i"))`;
 			}
 
 			// Filter on given language if available
@@ -73,6 +74,14 @@ function buildQuery(properties, prefixes) {
 				statementsSparql += `\nFILTER(LANG(?${nextSubject}) = "${languageFilter}")`;
 			}
 		}
+
+		// Wrap statements inside OPTIONAL if indicated as such
+		if (propertyIsOptional) {
+			statementsSparql = `\nOPTIONAL {${statementsSparql}\n}`;
+		}
+
+		// Start WHERE statements off with property name as comment
+		statementsSparql = `# ${propertyName}${statementsSparql}`;
 
 		// Add finishing object variable name to array for SELECT statement
 		selectVariables.push(nextSubject);
@@ -116,6 +125,7 @@ const properties = {
 			},
 		],
 		filters: { string: 'luchter', language: 'nl' },
+		optional: true,
 	},
 };
 
