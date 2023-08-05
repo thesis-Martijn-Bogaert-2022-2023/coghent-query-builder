@@ -1,5 +1,5 @@
 // Function to process the properties
-function buildQuery(properties, prefixes, datasets) {
+function buildQuery(properties, prefixes, datasets, limit, offset) {
 	// Holds unique prefixes
 	const usedPrefixes = new Set();
 
@@ -90,32 +90,48 @@ function buildQuery(properties, prefixes, datasets) {
 		whereStatements.push(statementsSparql);
 	}
 
-	let query = '';
+	let queryStatements = [];
 
-	// Add PREFIX statements to query
-	if (usedPrefixes) {
-		query += `${[...usedPrefixes]
+	// Create PREFIX statements
+	if (usedPrefixes.size > 0) {
+		const prefixStatements = [...usedPrefixes]
 			.map((prefix) => `PREFIX ${prefix}:<${prefixes[prefix]}>`)
-			.join('\n')}
-		\n\n`;
+			.join('\n');
+		queryStatements.push(prefixStatements);
 	}
 
-	// Add SELECT statement to query
-	query += `${selectVariables.reduce(
+	// Create SELECT statement
+	const selectStatement = selectVariables.reduce(
 		(accumulator, currentVariable) => `${accumulator} ?${currentVariable}`,
 		'SELECT'
-	)}\n\n`;
+	);
+	queryStatements.push(selectStatement);
 
-	// Add FROM statements to query
-	if (datasets) {
-		query += `${datasets.map((dataset) => `FROM <${dataset}>`).join('\n')}
-	\n\n`;
+	// Create FROM statements
+	if (datasets && datasets.length > 0) {
+		const fromStatements = datasets
+			.map((dataset) => `FROM <${dataset}>`)
+			.join('\n');
+		queryStatements.push(fromStatements);
 	}
 
-	// Add WHERE clause to query
-	query += `WHERE {\n\n${whereStatements.join('\n\n')}\n\n}`;
+	// Create WHERE clause
+	const whereClause = `WHERE {\n\n${whereStatements.join('\n\n')}\n\n}`;
+	queryStatements.push(whereClause);
 
-	return query;
+	// Create LIMIT statement
+	if (limit) {
+		const limitStatement = `LIMIT ${limit}`;
+		queryStatements.push(limitStatement);
+	}
+
+	// Create OFFSET statement
+	if (offset) {
+		const offsetStatement = `OFFSET ${offset}`;
+		queryStatements.push(offsetStatement);
+	}
+
+	return queryStatements.join('\n\n');
 }
 
 const properties = {
@@ -140,12 +156,12 @@ const prefixes = {
 };
 
 const datasets = [
-	'http://stad.gent/ldes/hva',
-	'http://stad.gent/ldes/dmg',
-	'http://stad.gent/ldes/archief',
-	'http://stad.gent/ldes/stam',
-	'http://stad.gent/ldes/industriemuseum',
+	// 'http://stad.gent/ldes/hva',
+	// 'http://stad.gent/ldes/dmg',
+	// 'http://stad.gent/ldes/archief',
+	// 'http://stad.gent/ldes/stam',
+	// 'http://stad.gent/ldes/industriemuseum',
 ];
 
-const query = buildQuery(properties, prefixes, datasets);
+const query = buildQuery(properties, prefixes, datasets, 100, 120);
 console.log(query);
