@@ -94,7 +94,7 @@ function buildQuery(properties, prefixes) {
 
 	// Add prefix statements to query
 	prefixStatements = [...usedPrefixes]
-		.map((prefix) => `PREFIX ${prefix}:${prefixes[prefix]}`)
+		.map((prefix) => `PREFIX ${prefix}:<${prefixes[prefix]}>`)
 		.join('\n');
 	query += `${prefixStatements}\n\n`;
 
@@ -124,14 +124,13 @@ const properties = {
 				object_variable_name: 'note',
 			},
 		],
-		filters: { string: 'luchter', language: 'nl' },
 		optional: true,
 	},
 };
 
 const prefixes = {
-	cidoc: '<http://www.cidoc-crm.org/cidoc-crm/>',
-	skos: '<http://www.w3.org/2004/02/skos/core#>',
+	cidoc: 'http://www.cidoc-crm.org/cidoc-crm/',
+	skos: 'http://www.w3.org/2004/02/skos/core#',
 };
 
 const query = buildQuery(properties, prefixes);
