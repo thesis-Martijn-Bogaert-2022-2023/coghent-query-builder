@@ -1,5 +1,5 @@
 // Function to process the properties
-function buildQuery(properties, prefixes) {
+function buildQuery(properties, prefixes, datasets) {
 	// Holds unique prefixes
 	const usedPrefixes = new Set();
 
@@ -11,12 +11,12 @@ function buildQuery(properties, prefixes) {
 
 	// Loop over each property
 	for (const [propertyName, propertyDetails] of Object.entries(properties)) {
+		// Statements are required to build query for current property
 		const propertyStatements = propertyDetails['statements'];
+		if (!propertyStatements) continue;
+
 		const propertyFilters = propertyDetails['filters'];
 		const propertyIsOptional = propertyDetails['optional'];
-
-		// Statements are required to build query for current property
-		if (!propertyStatements) continue;
 
 		// "Human made object" (artwork) is starting subject
 		let nextSubject = 'human_made_object';
@@ -92,22 +92,28 @@ function buildQuery(properties, prefixes) {
 
 	let query = '';
 
-	// Add prefix statements to query
-	prefixStatements = [...usedPrefixes]
-		.map((prefix) => `PREFIX ${prefix}:<${prefixes[prefix]}>`)
-		.join('\n');
-	query += `${prefixStatements}\n\n`;
+	// Add PREFIX statements to query
+	if (usedPrefixes) {
+		query += `${[...usedPrefixes]
+			.map((prefix) => `PREFIX ${prefix}:<${prefixes[prefix]}>`)
+			.join('\n')}
+		\n\n`;
+	}
 
-	// Add select statement to query
-	selectStatement = selectVariables.reduce(
+	// Add SELECT statement to query
+	query += `${selectVariables.reduce(
 		(accumulator, currentVariable) => `${accumulator} ?${currentVariable}`,
 		'SELECT'
-	);
-	query += `${selectStatement}\n\n`;
+	)}\n\n`;
 
-	// Add where clause to query
-	whereClause = `WHERE {\n\n${whereStatements.join('\n\n')}\n\n}`;
-	query += whereClause;
+	// Add FROM statements to query
+	if (datasets) {
+		query += `${datasets.map((dataset) => `FROM <${dataset}>`).join('\n')}
+	\n\n`;
+	}
+
+	// Add WHERE clause to query
+	query += `WHERE {\n\n${whereStatements.join('\n\n')}\n\n}`;
 
 	return query;
 }
@@ -133,5 +139,13 @@ const prefixes = {
 	skos: 'http://www.w3.org/2004/02/skos/core#',
 };
 
-const query = buildQuery(properties, prefixes);
+const datasets = [
+	'http://stad.gent/ldes/hva',
+	'http://stad.gent/ldes/dmg',
+	'http://stad.gent/ldes/archief',
+	'http://stad.gent/ldes/stam',
+	'http://stad.gent/ldes/industriemuseum',
+];
+
+const query = buildQuery(properties, prefixes, datasets);
 console.log(query);
