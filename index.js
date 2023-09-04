@@ -43,7 +43,7 @@ export function buildQuery(properties, prefixes, datasets, limit, offset) {
 
 			// Use property name as object variable name in case ending object varialbe name isn't available
 			if (!objectVariableName && index >= propertyStatements.length - 1) {
-				objectVariableName = propertyName;
+				objectVariableName = propertyName.toLowerCase();
 			}
 
 			// Start new triple in case subject is ready, build property path sequence otherwise
