@@ -19,7 +19,7 @@ export interface Properties {
 
 export function buildQuery(
 	properties: Properties,
-	prefixes: { [prefix: string]: string },
+	prefixes?: { [prefix: string]: string },
 	datasets?: string[],
 	limit?: number,
 	offset?: number

@@ -1,5 +1,13 @@
 // Function to process the properties
 export function buildQuery(properties, prefixes, datasets, limit, offset) {
+	if (!prefixes || typeof prefixes !== 'object') {
+		prefixes = {};
+	}
+
+	if (!Array.isArray(datasets)) {
+		datasets = [];
+	}
+
 	// Holds unique prefixes
 	const usedPrefixes = new Set();
 
@@ -108,7 +116,7 @@ export function buildQuery(properties, prefixes, datasets, limit, offset) {
 	queryStatements.push(selectStatement);
 
 	// Create FROM statements
-	if (datasets && datasets.length > 0) {
+	if (datasets.length > 0) {
 		const fromStatements = datasets
 			.map((dataset) => `FROM <${dataset}>`)
 			.join('\n');
