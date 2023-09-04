@@ -26,8 +26,8 @@ export function buildQuery(properties, prefixes, datasets, limit, offset) {
 		const propertyFilters = propertyDetails['filters'];
 		const propertyIsOptional = propertyDetails['optional'];
 
-		// "Human made object" (artwork) is starting subject
-		let nextSubject = 'human_made_object';
+		// Set starting subject
+		let nextSubject = propertyStatements[0]?.['subject_variable_name'] || 'o';
 
 		// String for building current propertie's WHERE clause statements
 		let statementsSparql = '';

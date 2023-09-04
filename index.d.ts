@@ -1,6 +1,7 @@
 export interface Statement {
 	prefix?: string;
 	predicate: string;
+	subject_variable_name?: string; // Added this line
 	object_variable_name?: string;
 }
 
