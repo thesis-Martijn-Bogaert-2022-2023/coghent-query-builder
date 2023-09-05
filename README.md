@@ -5,15 +5,15 @@ This Node.js application exports a `buildQuery` function that outputs a SPARQL q
 1. Clone the repository and navigate to its root.
 2. Run:
 ```bash
-npm install
+yarn install
 ```
-3. To use the app as a local NPM package for other Node.js applications, run:
+1. To use the app as a local package for other Node.js applications, run:
 ```bash
-npm link
+yarn link
 ```
-4. Inside the *other* Node.js application, run:
+1. Inside the *other* Node.js application, run:
 ```bash
-npm link sparql-query-builder
+yarn link "sparql-query-builder"
 ```
 
 ## Usage
