@@ -101,7 +101,7 @@ export function buildQuery(properties, prefixes, datasets, limit, offset) {
 	let queryStatements = [];
 
 	// Create PREFIX statements
-	if (usedPrefixes.size > 0) {
+	if (Object.keys(prefixes).length > 0 && usedPrefixes.size > 0) {
 		const prefixStatements = [...usedPrefixes]
 			.map((prefix) => `PREFIX ${prefix}:<${prefixes[prefix]}>`)
 			.join('\n');
